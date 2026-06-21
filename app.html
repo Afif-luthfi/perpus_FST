@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Perpustakaan FST</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .fade-out { opacity: 0; transform: scale(0.95); transition: all 0.3s ease-out; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex overflow-hidden">
+
+    <div id="mobile-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity"></div>
+
+    <aside id="sidebar" class="w-64 bg-slate-900 flex flex-col text-slate-300 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-50 transition-transform duration-300 shadow-2xl md:shadow-none">
+        <div class="h-16 flex items-center justify-between px-6 border-b border-slate-700 mb-6 bg-slate-950">
+            <div class="flex items-center">
+                <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3 overflow-hidden p-0.5"><img src="assets/image/images.jpg" alt="Logo FST" class="w-full h-full object-contain"></div>
+                <div><h1 class="text-white font-bold text-sm tracking-wide">Perpustakaan</h1><p class="text-[10px] text-slate-400">FST UIN Jakarta</p></div>
+            </div>
+            <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+
+        <nav id="nav-group-user" class="flex-1 px-4 space-y-2 hidden">
+            <button onclick="nav('dasbor-user')" id="nav-user-dasbor-user" class="nav-btn w-full flex items-center px-4 py-3 bg-slate-800 text-white rounded-lg font-medium transition-colors"><i class="fa-solid fa-house w-6 text-left"></i> Dasbor</button>
+            <button onclick="nav('katalog')" id="nav-user-katalog" class="nav-btn w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"><i class="fa-solid fa-book w-6 text-left"></i> Katalog Buku</button>
+            <button onclick="nav('aktif')" id="nav-user-aktif" class="nav-btn w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"><i class="fa-solid fa-bookmark w-6 text-left"></i> Peminjaman Aktif</button>
+            <button onclick="nav('riwayat')" id="nav-user-riwayat" class="nav-btn w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"><i class="fa-solid fa-clock-rotate-left w-6 text-left"></i> Riwayat Pinjam</button>
+            <button onclick="nav('profil')" id="nav-user-profil" class="nav-btn w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"><i class="fa-solid fa-id-card w-6 text-left"></i> Profil & Kartu</button>
+        </nav>
+
+        <nav id="nav-group-admin" class="flex-1 px-4 space-y-2 hidden">
+            <button onclick="nav('dasbor-admin')" id="nav-admin-dasbor-admin" class="nav-btn w-full flex items-center px-4 py-3 bg-slate-800 text-white rounded-lg font-medium transition-colors"><i class="fa-solid fa-chart-simple w-6 text-left"></i> Dasbor</button>
+            <button onclick="nav('katalog')" id="nav-admin-katalog" class="nav-btn w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"><i class="fa-solid fa-book-open w-6 text-left"></i> Katalog</button>
+            <button onclick="nav('validasi')" id="nav-admin-validasi" class="nav-btn w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"><i class="fa-solid fa-expand w-6 text-left"></i> Validasi Pinjaman</button>
+            <button onclick="nav('denda')" id="nav-admin-denda" class="nav-btn w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"><i class="fa-solid fa-dollar-sign w-6 text-left"></i> Manajemen Denda</button>
+            <button onclick="nav('profil')" id="nav-admin-profil" class="nav-btn w-full flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"><i class="fa-regular fa-user w-6 text-left"></i> Profil</button>
+        </nav>
+
+        <div onclick="logout()" class="p-4 border-t border-slate-700 flex items-center hover:bg-red-950 cursor-pointer transition-colors group">
+            <div id="sidebar-initials" class="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center text-white text-xs mr-3 group-hover:bg-red-600 transition-colors">--</div>
+            <div class="flex-1 overflow-hidden"><p id="sidebar-name" class="text-white text-xs font-bold truncate group-hover:text-red-100">Memuat...</p><p id="sidebar-id" class="text-[10px] text-slate-400 truncate">...</p></div>
+            <i class="fa-solid fa-arrow-right-from-bracket text-slate-400 text-sm group-hover:text-red-500"></i>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <header class="md:hidden bg-blue-900 text-white p-4 flex justify-between items-center shadow-md z-30">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-white rounded-full p-0.5 overflow-hidden"><img src="assets/image/images.jpg" class="w-full h-full object-contain"></div>
+                <h1 class="font-bold text-sm">Perpustakaan FST</h1>
+            </div>
+            <button onclick="toggleSidebar()" class="text-white text-2xl"><i class="fa-solid fa-bars"></i></button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto relative bg-slate-50 p-4 md:p-8 w-full block">
+
+            <section id="view-dasbor-user" class="view-section hidden block">
+                <div class="bg-blue-900 text-white rounded-2xl p-6 md:p-8 mb-8 shadow-md flex flex-col md:flex-row md:justify-between md:items-end gap-4 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+                    <div><p class="text-slate-300 mb-1 text-sm">Selamat datang,</p><h2 id="dash-name" class="text-2xl md:text-3xl font-bold mb-2">Memuat...</h2><p id="dash-dept" class="text-sm text-slate-300">...</p></div>
+                    <div class="md:text-right"><p class="text-xs text-slate-300 font-medium uppercase tracking-wider mb-1">HARI INI</p><p class="text-lg md:text-xl font-bold mb-3">20 Juni 2026</p><span id="dash-badge-denda" class="bg-red-500/20 text-red-200 px-4 py-1.5 rounded-full text-xs font-semibold border border-red-500/50">Denda: Rp 0</span></div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
+                    <div class="bg-white p-4 md:p-6 rounded-xl border border-slate-200 shadow-sm"><i class="fa-solid fa-book-open text-blue-600 mb-2 md:mb-3 text-lg md:text-xl"></i><h3 id="stat-user-pinjam" class="text-2xl md:text-3xl font-bold text-slate-800">0</h3><p class="text-[10px] md:text-xs text-slate-500 mt-1">Buku Dipinjam</p></div>
+                    <div class="bg-white p-4 md:p-6 rounded-xl border border-amber-300 shadow-sm"><i class="fa-regular fa-clock text-amber-500 mb-2 md:mb-3 text-lg md:text-xl"></i><h3 id="stat-user-segera" class="text-2xl md:text-3xl font-bold text-amber-600">0</h3><p class="text-[10px] md:text-xs text-slate-500 mt-1">Jatuh Tempo Segera</p></div>
+                    <div class="bg-white p-4 md:p-6 rounded-xl border border-red-200 shadow-sm relative"><i class="fa-solid fa-triangle-exclamation text-red-500 mb-2 md:mb-3 text-lg md:text-xl"></i><h3 id="stat-user-telat" class="text-2xl md:text-3xl font-bold text-red-600">0</h3><p class="text-[10px] md:text-xs text-slate-500 mt-1">Buku Terlambat</p></div>
+                    <div class="bg-white p-4 md:p-6 rounded-xl border border-red-200 shadow-sm relative"><i class="fa-solid fa-dollar-sign text-red-500 mb-2 md:mb-3 text-lg md:text-xl"></i><h3 id="stat-user-denda" class="text-2xl md:text-3xl font-bold text-red-600">Rp 0</h3><p class="text-[10px] md:text-xs text-slate-500 mt-1">Total Denda</p></div>
+                </div>
+
+                <div class="mb-10">
+                    <div class="flex justify-between items-end mb-4"><h3 class="text-lg font-bold text-slate-800">Peminjaman Aktif</h3><button onclick="nav('aktif')" class="text-sm text-blue-600 hover:underline font-medium">Lihat semua &rarr;</button></div>
+                    <div id="dash-aktif-container" class="space-y-4"></div> 
+                </div>
+
+                <div class="flex justify-between items-end mb-4"><h3 class="text-lg font-bold text-slate-800">Rekomendasi untuk Anda</h3><button onclick="nav('katalog')" class="text-sm text-blue-600 hover:underline font-medium">Lihat katalog &rarr;</button></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 pb-10" id="dash-rekomen-container"></div>
+            </section>
+
+            <section id="view-aktif" class="view-section hidden block max-w-5xl">
+                <h2 class="text-2xl font-bold text-slate-800 mb-1">Peminjaman Aktif</h2>
+                <p class="text-slate-500 mb-6 text-sm">Buku yang sedang Anda pinjam saat ini</p>
+                <div id="aktif-container" class="space-y-4 mb-8"></div> 
+                <div class="bg-slate-100 p-4 rounded-xl text-xs text-slate-500 border border-slate-200"><h4 class="font-bold text-slate-700 mb-2"><i class="fa-solid fa-circle-info mr-1"></i> Ketentuan Perpanjangan</h4><ul class="list-disc pl-4 space-y-1"><li>Perpanjangan maksimal 2 kali per buku (+14 hari).</li><li>Tidak dapat diperpanjang jika buku telah melewati tanggal jatuh tempo.</li></ul></div>
+            </section>
+
+            <section id="view-riwayat" class="view-section hidden block max-w-5xl">
+                <h2 class="text-2xl font-bold text-slate-800 mb-1">Riwayat Peminjaman</h2>
+                <p class="text-slate-500 mb-6 text-sm">Seluruh aktivitas pinjam Anda tercatat di sini</p>
+                <div id="riwayat-container" class="space-y-4 pb-10"></div>
+            </section>
+
+            <section id="view-katalog" class="view-section hidden block">
+                <h2 class="text-2xl font-bold text-slate-800 mb-1">Katalog Koleksi</h2>
+                <p class="text-slate-500 mb-6 text-sm">Buku fisik, e-book, dan jurnal ilmiah FST</p>
+                <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-200 mb-6 flex gap-2">
+                    <div class="relative flex-1"><i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i><input type="text" id="input-pencarian" onkeyup="cariBuku()" placeholder="Cari judul/pengarang..." class="w-full pl-10 pr-4 py-2.5 outline-none rounded-lg text-sm"></div>
+                    <button onclick="cariBuku()" class="bg-blue-900 text-white px-4 md:px-6 rounded-lg font-medium text-sm">Cari</button>
+                </div>
+                <div id="katalog-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pb-10"></div>
+            </section>
+
+            <section id="view-detail" class="view-section hidden block">
+                <button onclick="nav('katalog')" class="mb-6 text-slate-600 hover:text-blue-600 font-medium flex items-center gap-2 text-sm"><i class="fa-solid fa-arrow-left"></i> Kembali Katalog</button>
+                <div class="bg-white rounded-2xl p-4 md:p-8 max-w-4xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6 md:gap-10">
+                    <div class="w-full md:w-1/3"><div class="aspect-[3/4] bg-slate-200 rounded-xl bg-cover border border-slate-200" style="background-image: url('https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&fit=crop');"></div></div>
+                    <div class="flex-1 flex flex-col">
+                        <div class="flex gap-2 mb-3"><span class="border border-blue-200 text-blue-600 px-3 py-1 rounded text-[10px] font-bold bg-blue-50">Buku Fisik</span></div>
+                        <h2 class="text-2xl md:text-3xl font-bold mb-2">Kalkulus Multivariabel</h2><p class="text-slate-500 mb-6 text-sm">James Stewart</p>
+                        <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-center gap-4 mb-6">
+                            <div class="w-10 h-10 bg-white border border-emerald-200 text-emerald-500 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-check"></i></div>
+                            <div><p class="font-bold text-slate-800 text-sm">3 eksemplar tersedia</p><p class="text-xs text-slate-500">Rak A-12-3 • Lantai 2</p></div>
+                        </div>
+                        <div class="mt-auto"><button onclick="nav('konfirmasi')" class="w-full bg-blue-900 text-white py-3 md:py-4 rounded-xl font-bold hover:bg-blue-800 transition shadow-md">Pinjam Buku Ini</button></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-konfirmasi" class="view-section hidden block max-w-4xl">
+                <button onclick="nav('detail')" class="mb-6 text-slate-600 hover:text-blue-600 font-medium flex items-center gap-2 text-sm"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
+                <h2 class="text-xl md:text-2xl font-bold mb-6">Konfirmasi Peminjaman</h2>
+                <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 mb-6 flex gap-4 items-start">
+                    <div class="w-16 h-24 bg-slate-200 rounded border border-slate-100 bg-cover bg-center shrink-0" style="background-image: url('https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=200&fit=crop');"></div>
+                    <div><h3 class="font-bold text-slate-800">Kalkulus Multivariabel</h3><p class="text-xs text-slate-500 mb-2">Rak A-12-3</p><span class="text-emerald-600 border border-emerald-200 bg-emerald-50 text-[10px] md:text-xs font-bold px-2 py-1 rounded">Tersedia</span></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <label class="border-2 border-blue-900 bg-blue-50 p-4 rounded-xl cursor-pointer relative"><input type="radio" name="metode" checked class="absolute top-4 right-4 w-4 h-4"><h4 class="font-bold text-slate-800 mb-1 text-sm">Ambil Sendiri di Rak</h4><p class="text-[10px] text-slate-500">Cari buku di rak, lalu validasi dengan QR.</p></label>
+                    <label class="border border-slate-200 p-4 rounded-xl cursor-pointer relative"><input type="radio" name="metode" class="absolute top-4 right-4 w-4 h-4"><h4 class="font-bold text-slate-800 mb-1 text-sm">Disiapkan Pustakawan</h4><p class="text-[10px] text-slate-500">Ambil di meja sirkulasi dalam 15 menit.</p></label>
+                </div>
+                <button onclick="prosesPinjam()" class="w-full bg-blue-900 text-white py-4 rounded-xl font-bold hover:bg-blue-800 transition">Konfirmasi & Buat QR</button>
+            </section>
+
+            <section id="view-sukses" class="view-section hidden block max-w-xl mx-auto text-center pt-8">
+                <h2 class="text-2xl font-bold mb-4 text-emerald-600"><i class="fa-solid fa-circle-check mr-2"></i>Berhasil!</h2>
+                <div class="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm mb-6">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TKT-20260620" class="mx-auto border-4 border-slate-100 p-2 rounded-xl mb-4">
+                    <p id="sukses-tiket" class="text-xs text-slate-400 font-mono font-bold tracking-widest">-</p>
+                </div>
+                <button onclick="nav('dasbor-user')" class="w-full bg-blue-900 text-white py-4 rounded-xl font-bold hover:bg-blue-800 transition shadow-md">Selesai</button>
+            </section>
+
+            <section id="view-profil" class="view-section hidden block max-w-4xl">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6">Profil & Kartu Anggota</h2>
+                
+                <div class="bg-blue-900 rounded-3xl p-6 md:p-8 mb-8 text-white shadow-xl relative overflow-hidden bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] flex flex-col">
+                    <div class="flex justify-between items-start z-10 mb-6">
+                        <div class="flex gap-3 items-center">
+                            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center p-0.5 overflow-hidden shrink-0"><img src="assets/image/images.jpg" class="w-full h-full object-contain"></div>
+                            <div><p class="text-[8px] md:text-[10px] text-slate-300 tracking-wider">KARTU ANGGOTA</p><p class="font-bold text-xs md:text-sm">UIN SYARIF HIDAYATULLAH</p></div>
+                        </div>
+                        <div class="bg-white p-1 md:p-2 rounded-lg"><img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=anggota" class="w-12 h-12 md:w-16 md:h-16"></div>
+                    </div>
+                    <div class="flex gap-4 items-center z-10 relative mt-auto mb-4">
+                        <div id="card-initials" class="w-14 h-14 md:w-16 md:h-16 bg-slate-800 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl font-bold border-2 border-white/20">--</div>
+                        <div><h2 id="card-name" class="text-xl md:text-2xl font-bold mb-1">Nama</h2><p id="card-dept-short" class="text-xs md:text-sm text-slate-300">Role</p></div>
+                    </div>
+                    <div class="z-10"><p id="card-id-label" class="text-[8px] text-slate-400 mb-0.5 uppercase tracking-widest">ID</p><p id="card-id-number" class="text-lg md:text-2xl font-mono tracking-widest font-bold">000</p></div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 md:gap-6 mb-8 text-center">
+                    <div class="bg-white py-4 rounded-xl border border-slate-200 shadow-sm"><h3 id="profil-stat-pinjam" class="text-2xl md:text-3xl font-bold text-slate-800">0</h3><p class="text-[10px] md:text-xs text-slate-500 mt-1">Sedang Dipinjam</p></div>
+                    <div class="bg-white py-4 rounded-xl border border-slate-200 shadow-sm"><h3 id="profil-stat-riwayat" class="text-2xl md:text-3xl font-bold text-slate-800">0</h3><p class="text-[10px] md:text-xs text-slate-500 mt-1">Total Riwayat</p></div>
+                    <div class="bg-red-50 py-4 rounded-xl border border-red-200 shadow-sm"><h3 id="profil-stat-denda" class="text-2xl md:text-3xl font-bold text-red-600">Rp 0</h3><p class="text-[10px] md:text-xs text-red-500 mt-1">Total Denda</p></div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Informasi Akun</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 text-sm">
+                        <div><p class="text-xs text-slate-400 mb-1">Nama Lengkap</p><p id="detail-name" class="font-bold text-slate-800">-</p></div>
+                        <div><p id="detail-id-label" class="text-xs text-slate-400 mb-1">NIM</p><p id="detail-id-number" class="font-bold text-slate-800">-</p></div>
+                        <div><p class="text-xs text-slate-400 mb-1">Program Studi / Status</p><p id="detail-dept" class="font-bold text-slate-800">-</p></div>
+                        <div><p class="text-xs text-slate-400 mb-1">Fakultas</p><p class="font-bold text-slate-800">Sains dan Teknologi</p></div>
+                        <div><p class="text-xs text-slate-400 mb-1">Status Anggota</p><p class="font-bold text-emerald-600">Aktif</p></div>
+                        <div><p class="text-xs text-slate-400 mb-1">Anggota Sejak</p><p class="font-bold text-slate-800">1 September 2023</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-dasbor-admin" class="view-section hidden block">
+                <div class="bg-blue-900 text-white rounded-2xl p-8 mb-8 shadow-md flex justify-between items-end bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+                    <div><p class="text-slate-300 mb-1 text-sm">Dasbor Pustakawan</p><h2 id="admin-dash-name" class="text-3xl font-bold mb-2">Memuat...</h2><p class="text-sm text-slate-300">Perpustakaan FST</p></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // --- 1. DETEKSI SESI ---
+        const sessionData = localStorage.getItem('activeSession');
+        if (!sessionData) window.location.href = 'index.html'; 
+        const currentUser = JSON.parse(sessionData);
+        const isAdmin = currentUser.role === 'Pustakawan'; 
+        let idLabelName = currentUser.role === 'Dosen / Peneliti' ? 'NIDN' : (isAdmin ? 'ID Pustakawan' : 'NIM');
+
+        // --- 2. MANAJEMEN DATABASE BUKU & TRANSAKSI (LOCAL STORAGE) ---
+        const databaseBuku = [
+            { judul: 'Kalkulus Multivariabel', pengarang: 'James Stewart', tipe: 'Buku Fisik', rating: '4.5', status: 'Tersedia (3 eks.)', isHabis: false, img: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=300&fit=crop' },
+            { judul: 'Pemrograman Python', pengarang: 'Wes McKinney', tipe: 'Buku Fisik', rating: '4.8', status: 'Tidak Tersedia', isHabis: true, img: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300&fit=crop' },
+            { judul: 'Fisika Modern', pengarang: 'Paul A. Tipler', tipe: 'Buku Fisik', rating: '4.3', status: 'Sisa 2 eks.', isHabis: false, img: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300&fit=crop' },
+            { judul: 'Algoritma & Struktur Data', pengarang: 'Thomas H. Cormen', tipe: 'Buku Fisik', rating: '4.9', status: 'Sisa 1 eks.', isHabis: false, img: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300&fit=crop' }
+        ];
+
+        // Buat DB Peminjaman Aktif jika belum ada di browser
+        const defaultDbAktif = [
+            { id_peminjam: '12409011050101', tiket: 'TKT-2026-001', buku: 'Kalkulus Multivariabel', pengarang: 'James Stewart', img: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=100&fit=crop', status_hari: '0 hari lagi', isTelat: true, denda: 15000 },
+            { id_peminjam: '0012038501', tiket: 'TKT-DOSEN-01', buku: 'Fisika Modern', pengarang: 'Paul A. Tipler', img: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=100&fit=crop', status_hari: '30 Juni 2026', isTelat: false, denda: 0 }
+        ];
+        if(!localStorage.getItem('dbAktif')) localStorage.setItem('dbAktif', JSON.stringify(defaultDbAktif));
+        let dbAktif = JSON.parse(localStorage.getItem('dbAktif'));
+
+        // Buat DB Riwayat jika belum ada
+        const defaultDbRiwayat = [
+            { id_peminjam: '12409011050101', tiket: 'TKT-2026-R01', buku: 'Pemrograman Python', status: 'Dikembalikan', tgl: 'Kembali: 14 Mei 2026', isTelat: false, img: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=100&fit=crop' }
+        ];
+        if(!localStorage.getItem('dbRiwayat')) localStorage.setItem('dbRiwayat', JSON.stringify(defaultDbRiwayat));
+        let dbRiwayat = JSON.parse(localStorage.getItem('dbRiwayat'));
+
+        const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+
+        // --- 3. INISIALISASI HALAMAN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (isAdmin) {
+                document.getElementById('nav-group-admin').classList.remove('hidden');
+                nav('dasbor-admin'); 
+            } else {
+                document.getElementById('nav-group-user').classList.remove('hidden');
+                nav('dasbor-user'); 
+                renderDataUser(currentUser.id); // Panggil perenderan data
+            }
+
+            // Tulis Info Profil Dasar
+            document.getElementById('sidebar-name').innerText = currentUser.name;
+            document.getElementById('sidebar-id').innerText = `${idLabelName} ${currentUser.id}`;
+            document.getElementById('sidebar-initials').innerText = currentUser.initials;
+            document.getElementById('card-name').innerText = currentUser.name;
+            document.getElementById('card-dept-short').innerText = currentUser.role;
+            document.getElementById('card-id-label').innerText = idLabelName;
+            document.getElementById('card-id-number').innerText = currentUser.id;
+            document.getElementById('card-initials').innerText = currentUser.initials;
+            document.getElementById('detail-name').innerText = currentUser.name;
+            document.getElementById('detail-id-label').innerText = idLabelName;
+            document.getElementById('detail-id-number').innerText = currentUser.id;
+            document.getElementById('detail-dept').innerText = currentUser.dept;
+            if(isAdmin) document.getElementById('admin-dash-name').innerText = currentUser.name;
+
+            renderKatalog(databaseBuku);
+        });
+
+        // --- 4. RENDER DATA KHUSUS USER & LOGIKA PINJAM ---
+        function renderDataUser(userId) {
+            const myAktif = dbAktif.filter(item => item.id_peminjam === userId);
+            const myRiwayat = dbRiwayat.filter(item => item.id_peminjam === userId);
+            
+            let pinjam = myAktif.length;
+            let telat = myAktif.filter(i => i.isTelat).length;
+            let segera = pinjam - telat; 
+            let totalDenda = myAktif.reduce((sum, i) => sum + i.denda, 0);
+
+            // Tulis ke Dasbor
+            document.getElementById('dash-name').innerText = currentUser.name;
+            document.getElementById('dash-dept').innerText = currentUser.dept;
+            document.getElementById('dash-badge-denda').innerText = `Denda: ${formatRp(totalDenda)}`;
+            document.getElementById('stat-user-pinjam').innerText = pinjam;
+            document.getElementById('stat-user-segera').innerText = segera;
+            document.getElementById('stat-user-telat').innerText = telat;
+            document.getElementById('stat-user-denda').innerText = formatRp(totalDenda);
+
+            // Tulis Ke Halaman Profil (Kotak Statistik)
+            document.getElementById('profil-stat-pinjam').innerText = pinjam;
+            document.getElementById('profil-stat-riwayat').innerText = myRiwayat.length;
+            document.getElementById('profil-stat-denda').innerText = formatRp(totalDenda);
+
+            // Render Peminjaman Aktif
+            const wadahDasbor = document.getElementById('dash-aktif-container');
+            const wadahAktif = document.getElementById('aktif-container');
+            wadahDasbor.innerHTML = ''; wadahAktif.innerHTML = '';
+
+            if (myAktif.length === 0) {
+                const kosong = `<p class="text-sm text-slate-500">Tidak ada peminjaman aktif saat ini.</p>`;
+                wadahDasbor.innerHTML = kosong; wadahAktif.innerHTML = kosong;
+            } else {
+                myAktif.forEach(item => {
+                    const gayaWaktu = item.isTelat ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    const iconWaktu = item.isTelat ? 'fa-clock' : 'fa-calendar';
+                    const dendaTeks = item.denda > 0 ? `<p class="text-[10px] md:text-xs text-red-600 font-semibold mt-1">Denda: ${formatRp(item.denda)}</p>` : '';
+                    
+                    const cardHTML = `
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
+                            <div class="flex items-start gap-4 flex-1">
+                                <div class="w-12 h-16 md:w-16 md:h-20 bg-slate-200 rounded border border-slate-100 bg-cover shrink-0" style="background-image: url('${item.img}');"></div>
+                                <div><h4 class="font-bold text-slate-800 text-sm md:text-base">${item.buku}</h4><p class="text-[10px] md:text-xs text-slate-500 mb-1">${item.pengarang}</p>
+                                <div class="flex flex-wrap items-center gap-2"><span class="text-[10px] font-mono text-slate-500">${item.tiket}</span><span class="${gayaWaktu} px-2 py-0.5 rounded text-[10px] font-bold border"><i class="fa-regular ${iconWaktu}"></i> ${item.status_hari}</span></div>
+                                ${dendaTeks}</div>
+                            </div>
+                            <button class="w-full md:w-auto px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 mt-2 md:mt-0"><i class="fa-solid fa-arrows-rotate"></i> Perpanjang</button>
+                        </div>`;
+                    wadahAktif.innerHTML += cardHTML;
+                    if (wadahDasbor.childElementCount < 2) wadahDasbor.innerHTML += cardHTML;
+                });
+            }
+
+            // Render Riwayat Pinjam
+            const wadahRiwayat = document.getElementById('riwayat-container');
+            wadahRiwayat.innerHTML = '';
+            if (myRiwayat.length === 0) wadahRiwayat.innerHTML = `<p class="text-sm text-slate-500">Belum ada riwayat aktivitas.</p>`;
+            else {
+                myRiwayat.forEach(item => {
+                    wadahRiwayat.innerHTML += `
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-start gap-4 opacity-80">
+                            <div class="w-12 h-16 bg-slate-200 rounded border border-slate-100 bg-cover shrink-0" style="background-image: url('${item.img}');"></div>
+                            <div><h4 class="font-bold text-slate-800 text-sm">${item.buku}</h4>
+                                <div class="flex items-center gap-2 mb-1"><span class="text-[10px] font-mono text-slate-500">${item.tiket}</span><span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-200"><i class="fa-solid fa-check"></i> ${item.status}</span></div>
+                                <p class="text-[10px] text-slate-400">${item.tgl}</p>
+                            </div>
+                        </div>`;
+                });
+            }
+
+            // Render Rekomendasi
+            const wadahRekomen = document.getElementById('dash-rekomen-container');
+            wadahRekomen.innerHTML = '';
+            databaseBuku.slice(0,4).forEach(buku => {
+                wadahRekomen.innerHTML += `
+                    <div onclick="nav('detail')" class="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 flex flex-col cursor-pointer hover:shadow-md">
+                        <div class="h-40 md:h-48 bg-cover bg-center" style="background-image: url('${buku.img}');"><span class="absolute top-2 left-2 bg-white/90 text-blue-700 text-[10px] font-bold px-2 py-1 rounded">${buku.tipe}</span></div>
+                        <div class="p-3 md:p-4 flex-1 flex flex-col"><h4 class="font-bold text-slate-800 text-xs md:text-sm line-clamp-2">${buku.judul}</h4><p class="mt-auto text-[10px] text-emerald-600 font-bold border border-emerald-200 bg-emerald-50 px-1 py-0.5 rounded self-start mt-2">Tersedia</p></div>
+                    </div>`;
+            });
+        }
+
+        // AKSI SAAT TOMBOL PINJAM DIKLIK
+        function prosesPinjam() {
+            // Buat nomor tiket acak
+            const tiketAcak = 'TKT-' + new Date().getFullYear() + Math.floor(Math.random() * 10000);
+            
+            // Catat peminjaman baru (Untuk prototype, kita asumsikan yang dipinjam selalu buku Kalkulus)
+            const pinjamanBaru = {
+                id_peminjam: currentUser.id,
+                tiket: tiketAcak,
+                buku: 'Kalkulus Multivariabel',
+                pengarang: 'James Stewart',
+                img: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=100&fit=crop',
+                status_hari: '14 Hari Lagi',
+                isTelat: false,
+                denda: 0
+            };
+
+            // Masukkan ke Array, lalu simpan ke Local Storage
+            dbAktif.push(pinjamanBaru);
+            localStorage.setItem('dbAktif', JSON.stringify(dbAktif));
+
+            // Tampilkan nomor tiket di halaman Sukses
+            document.getElementById('sukses-tiket').innerText = tiketAcak;
+
+            // Render ulang data UI agar kotak statistik dan daftar pinjaman langsung bertambah
+            renderDataUser(currentUser.id);
+
+            // Arahkan ke halaman QR Code
+            nav('sukses');
+        }
+
+        // --- 5. FUNGSI UI & NAVIGASI ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function nav(viewId) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
+            const target = document.getElementById('view-' + viewId);
+            if (target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-800', 'text-white'); btn.classList.add('text-slate-300');
+            });
+            const btnNav = document.getElementById(isAdmin ? 'nav-admin-' + viewId : 'nav-user-' + viewId);
+            if (btnNav) { btnNav.classList.remove('text-slate-300'); btnNav.classList.add('bg-slate-800', 'text-white'); }
+            
+            if (window.innerWidth < 768 && !document.getElementById('sidebar').classList.contains('-translate-x-full')) {
+                toggleSidebar();
+            }
+            document.querySelector('main').scrollTop = 0;
+        }
+
+        function logout() { localStorage.removeItem('activeSession'); window.location.href = 'index.html'; }
+
+        function renderKatalog(data) {
+            const container = document.getElementById('katalog-container');
+            container.innerHTML = ''; 
+            data.forEach(buku => {
+                const badgeHabis = buku.isHabis ? `<div class="absolute inset-0 bg-black/40 flex items-center justify-center"><span class="bg-red-600 text-white font-bold px-3 py-1 rounded shadow-lg -rotate-12 text-xs uppercase">Habis</span></div>` : '';
+                container.innerHTML += `
+                    <div onclick="${!buku.isHabis && !isAdmin ? "nav('detail')" : ""}" class="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 flex flex-col ${buku.isHabis ? 'opacity-80' : 'cursor-pointer hover:shadow-md'}">
+                        <div class="h-40 md:h-56 relative bg-cover bg-center" style="background-image: url('${buku.img}');"><span class="absolute top-2 left-2 bg-white/90 text-blue-700 text-[10px] font-bold px-2 py-1 rounded shadow-sm">${buku.tipe}</span>${badgeHabis}</div>
+                        <div class="p-3 md:p-4 flex-1 flex flex-col"><h4 class="font-bold text-slate-800 text-xs md:text-sm line-clamp-2">${buku.judul}</h4><p class="text-[10px] text-slate-500 mb-2">${buku.pengarang}</p><span class="mt-auto text-[10px] ${buku.isHabis ? 'text-red-500' : 'text-emerald-600'} font-bold">${buku.status}</span></div>
+                    </div>`;
+            });
+        }
+        function cariBuku() {
+            const keyword = document.getElementById('input-pencarian').value.toLowerCase();
+            renderKatalog(databaseBuku.filter(buku => buku.judul.toLowerCase().includes(keyword) || buku.pengarang.toLowerCase().includes(keyword)));
+        }
+    </script>
+</body>
+</html>

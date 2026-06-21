@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autentikasi - Perpustakaan FST</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at center, #1e3a8a 0%, #0f172a 100%);
+            background-attachment: fixed;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .bg-grid {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            z-index: -1;
+        }
+        /* Transisi Form */
+        .form-transition { transition: all 0.4s ease-in-out; }
+    </style>
+</head>
+<body class="relative overflow-hidden">
+    <div class="bg-grid"></div>
+
+    <main class="w-full max-w-[450px] px-6 py-8 flex flex-col items-center z-10">
+        
+        <div class="flex items-center gap-4 mb-8">
+            <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center p-0.5 shadow-lg overflow-hidden">
+                <img src="assets/image/images.jpg" alt="Logo FST" class="w-full h-full object-contain">
+            </div>
+            <div>
+                <h1 class="text-white text-2xl font-bold tracking-wide">Perpustakaan FST</h1>
+                <p class="text-blue-300 text-xs">UIN Syarif Hidayatullah Jakarta</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/60 backdrop-blur-md border border-slate-600 rounded-2xl w-full shadow-2xl overflow-hidden">
+            
+            <div class="flex border-b border-slate-600">
+                <button onclick="switchTab('login')" id="tab-login" class="flex-1 py-4 text-sm font-bold text-white border-b-2 border-blue-500 bg-slate-700/50 transition">Masuk</button>
+                <button onclick="switchTab('register')" id="tab-register" class="flex-1 py-4 text-sm font-bold text-slate-400 border-b-2 border-transparent hover:text-white transition">Daftar Baru</button>
+            </div>
+
+            <div class="p-8 relative">
+                <div id="alert-box" class="hidden mb-4 p-3 rounded-lg text-sm font-bold text-center"></div>
+
+                <form id="form-login" class="form-transition block space-y-4" onsubmit="handleLogin(event)">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">NIM / NIDN / ID Pustakawan</label>
+                        <div class="relative">
+                            <i class="fa-regular fa-id-badge absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="login-id" required class="w-full bg-slate-900/50 border border-slate-600 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm" placeholder="Contoh: 12409011...">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Kata Sandi</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <input type="password" id="login-pass" required class="w-full bg-slate-900/50 border border-slate-600 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-blue-900/50 transition mt-2">Masuk ke Sistem</button>
+                    <p class="text-center text-xs text-slate-500 pt-2">Gunakan 12409011050101 dan sandi 123 untuk Mahasiswa</p>
+                </form>
+
+                <form id="form-register" class="form-transition hidden space-y-4" onsubmit="handleRegister(event)">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Nama Lengkap</label>
+                        <input type="text" id="reg-name" required class="w-full bg-slate-900/50 border border-slate-600 text-white rounded-lg py-2.5 px-4 focus:outline-none focus:border-blue-500 transition text-sm" placeholder="Nama Anda">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Nomor Induk (NIM / NIDN)</label>
+                        <input type="text" id="reg-id" required class="w-full bg-slate-900/50 border border-slate-600 text-white rounded-lg py-2.5 px-4 focus:outline-none focus:border-blue-500 transition text-sm" placeholder="Nomor unik Anda">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Pilih Peran</label>
+                        <select id="reg-role" class="w-full bg-slate-900/50 border border-slate-600 text-white rounded-lg py-2.5 px-4 focus:outline-none focus:border-blue-500 transition text-sm">
+                            <option value="Mahasiswa">Mahasiswa</option>
+                            <option value="Dosen / Peneliti">Dosen / Peneliti</option>
+                            </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Kata Sandi Baru</label>
+                        <input type="password" id="reg-pass" required class="w-full bg-slate-900/50 border border-slate-600 text-white rounded-lg py-2.5 px-4 focus:outline-none focus:border-blue-500 transition text-sm" placeholder="Buat kata sandi">
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-emerald-900/50 transition mt-2">Daftar Akun</button>
+                </form>
+
+            </div>
+        </div>
+
+        <div class="mt-8 text-center"><p class="text-slate-500 text-xs">Sistem Informasi Perpustakaan • Versi 3.0 (DB Connected)</p></div>
+    </main>
+
+    <script>
+        // ==========================================
+        // UI LOGIC (Pindah Tab & Alert)
+        // ==========================================
+        function switchTab(tab) {
+            const formLogin = document.getElementById('form-login');
+            const formReg = document.getElementById('form-register');
+            const tabLogin = document.getElementById('tab-login');
+            const tabReg = document.getElementById('tab-register');
+            document.getElementById('alert-box').classList.add('hidden');
+
+            if (tab === 'login') {
+                formLogin.classList.remove('hidden'); formReg.classList.add('hidden');
+                tabLogin.classList.replace('text-slate-400', 'text-white'); tabLogin.classList.replace('border-transparent', 'border-blue-500'); tabLogin.classList.add('bg-slate-700/50');
+                tabReg.classList.replace('text-white', 'text-slate-400'); tabReg.classList.replace('border-blue-500', 'border-transparent'); tabReg.classList.remove('bg-slate-700/50');
+            } else {
+                formReg.classList.remove('hidden'); formLogin.classList.add('hidden');
+                tabReg.classList.replace('text-slate-400', 'text-white'); tabReg.classList.replace('border-transparent', 'border-blue-500'); tabReg.classList.add('bg-slate-700/50');
+                tabLogin.classList.replace('text-white', 'text-slate-400'); tabLogin.classList.replace('border-blue-500', 'border-transparent'); tabLogin.classList.remove('bg-slate-700/50');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alert-box');
+            alertBox.classList.remove('hidden', 'bg-red-500/20', 'text-red-400', 'bg-emerald-500/20', 'text-emerald-400');
+            
+            if (type === 'error') {
+                alertBox.classList.add('bg-red-500/20', 'text-red-400', 'border', 'border-red-500/50');
+                alertBox.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i> ${message}`;
+            } else {
+                alertBox.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border', 'border-emerald-500/50');
+                alertBox.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> ${message}`;
+            }
+        }
+
+        // ==========================================
+        // FETCH API KE BACKEND (PHP SERVER)
+        // ==========================================
+        // URL diarahkan ke folder htdocs XAMPP Anda
+        const API_URL = 'http://localhost/perpus_fst';
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const userData = {
+                name: document.getElementById('reg-name').value,
+                id: document.getElementById('reg-id').value,
+                role: document.getElementById('reg-role').value,
+                pass: document.getElementById('reg-pass').value
+            };
+
+            try {
+                // Arahkan ke file register.php
+                const response = await fetch(`${API_URL}/register.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    document.getElementById('form-register').reset();
+                    setTimeout(() => switchTab('login'), 1500);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Gagal terhubung ke Server PHP!', 'error');
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btnLogin = document.getElementById('btn-login');
+            btnLogin.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengautentikasi...';
+            btnLogin.disabled = true;
+
+            const loginData = {
+                id: document.getElementById('login-id').value,
+                pass: document.getElementById('login-pass').value
+            };
+
+            try {
+                // Arahkan ke file login.php
+                const response = await fetch(`${API_URL}/login.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(loginData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(`Selamat datang, ${result.data.name}!`, 'success');
+                    // Simpan data di local storage agar app.html tetap berfungsi
+                    localStorage.setItem('activeSession', JSON.stringify(result.data));
+                    
+                    setTimeout(() => {
+                        window.location.href = 'app.html';
+                    }, 1000);
+                } else {
+                    showAlert(result.message, 'error');
+                    btnLogin.innerHTML = 'Masuk ke Sistem';
+                    btnLogin.disabled = false;
+                }
+            } catch (error) {
+                showAlert('Gagal terhubung ke MySQL! Pastikan XAMPP menyala.', 'error');
+                btnLogin.innerHTML = 'Masuk ke Sistem';
+                btnLogin.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
